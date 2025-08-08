@@ -33,6 +33,7 @@ func StartServer(host string, port int) {
 	s, err := wish.NewServer(
 		wish.WithAddress(fmt.Sprintf("%s:%d", host, port)),
 		wish.WithPublicKeyAuth(publicKeyHandler),
+		wish.WithPasswordAuth(func(ctx ssh.Context, pass string) bool { return true }),
 		wish.WithHostKeyPath(hostKeyPath),
 		wish.WithMiddleware(
 			teaMiddleware.Middleware(terminalCVTeaHandler()),
