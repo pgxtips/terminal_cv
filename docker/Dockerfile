@@ -18,9 +18,11 @@ COPY --from=build /out/app /app/app
 RUN printf '%s\n' \
 '#!/bin/sh' \
 'set -e' \
-'if [ ! -f "$SSH_HOST_KEY_PATH" ]; then' \
+'echo "SSH_HOST_KEY_PATH=${SSH_HOST_KEY_PATH:-/app/keys/ssh_host_ed25519}"' \
+'if [ ! -s "$SSH_HOST_KEY_PATH" ] || [ ! -s "$SSH_HOST_KEY_PATH.pub" ]; then' \
 '  mkdir -p "$(dirname "$SSH_HOST_KEY_PATH")"' \
-'  ssh-keygen -t ed25519 -f "$SSH_HOST_KEY_PATH" -N ""' \
+'  rm -f "$SSH_HOST_KEY_PATH" "$SSH_HOST_KEY_PATH.pub"' \
+'  ssh-keygen -q -t ed25519 -f "$SSH_HOST_KEY_PATH" -N ""' \
 '  echo "Generated host key at $SSH_HOST_KEY_PATH"' \
 'fi' \
 'echo "Host key fingerprint:"' \
