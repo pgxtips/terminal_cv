@@ -3,9 +3,6 @@ package terminal_cv
 import (
 	"context"
 	"fmt"
-	"github.com/charmbracelet/ssh"
-	"github.com/charmbracelet/wish"
-	loggingMiddleware "github.com/charmbracelet/wish/logging"
 	"log"
 	"math/rand"
 	"os"
@@ -13,16 +10,30 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/charmbracelet/ssh"
+	"github.com/charmbracelet/wish"
+	loggingMiddleware "github.com/charmbracelet/wish/logging"
+
 	tea "github.com/charmbracelet/bubbletea"
 
 	teaMiddleware "github.com/charmbracelet/wish/bubbletea"
 )
 
+func getenv(k, def string) string {
+	if v := os.Getenv(k); v != "" {
+		return v
+	}
+	return def
+}
+
 func StartServer(host string, port int) {
+
+	hostKeyPath := getenv("SSH_HOST_KEY_PATH", ".ssh/term_info_ed25519")
+
 	s, err := wish.NewServer(
 		wish.WithAddress(fmt.Sprintf("%s:%d", host, port)),
 		wish.WithPublicKeyAuth(publicKeyHandler),
-		wish.WithHostKeyPath(".ssh/term_info_ed25519"),
+		wish.WithHostKeyPath(hostKeyPath),
 		wish.WithMiddleware(
 			teaMiddleware.Middleware(terminalCVTeaHandler()),
 			loggingMiddleware.Middleware(),
