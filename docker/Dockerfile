@@ -15,13 +15,21 @@ ENV SSH_HOST_KEY_PATH=/app/keys/ssh_host_ed25519
 COPY --from=build /out/app /app/app
 
 # ensure host key exists, then start
+# ensure host key exists, then start
 RUN printf '%s\n' \
 '#!/bin/sh' \
 'set -e' \
 'echo "SSH_HOST_KEY_PATH=${SSH_HOST_KEY_PATH:-/app/keys/ssh_host_ed25519}"' \
+'# If missing or empty, regenerate' \
 'if [ ! -s "$SSH_HOST_KEY_PATH" ] || [ ! -s "$SSH_HOST_KEY_PATH.pub" ]; then' \
+'  # Remove any accidental directory or file at the key path' \
+'  if [ -d "$SSH_HOST_KEY_PATH" ]; then' \
+'    rm -rf "$SSH_HOST_KEY_PATH"' \
+'  else' \
+'    rm -f "$SSH_HOST_KEY_PATH"' \
+'  fi' \
+'  rm -f "$SSH_HOST_KEY_PATH.pub"' \
 '  mkdir -p "$(dirname "$SSH_HOST_KEY_PATH")"' \
-'  rm -f "$SSH_HOST_KEY_PATH" "$SSH_HOST_KEY_PATH.pub"' \
 '  ssh-keygen -q -t ed25519 -f "$SSH_HOST_KEY_PATH" -N ""' \
 '  echo "Generated host key at $SSH_HOST_KEY_PATH"' \
 'fi' \
